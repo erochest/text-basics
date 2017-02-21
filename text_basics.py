@@ -4,6 +4,7 @@
 """Text analysis from basics."""
 
 
+from collections import Counter
 from datetime import datetime
 import json
 import os
@@ -99,16 +100,29 @@ def filter_tokens(tokens, stopwords):
     return filtered
 
 
-#  def ngrams(tokens, n):
-    #  """Return lists of n-grams."""
+def ngrams(tokens, n):
+    """Return lists of n-grams."""
+    grams = []
+    for i in range(len(tokens) - (n - 1)):
+        grams.append(' '.join(tokens[i:i+n]))
+    return grams
 
 
 #  def collocates(tokens, n):
     #  """Return pairs of collocates."""
 
 
-#  def frequencies(tokens):
-    #  """Calculate frequencies for tokens."""
+def frequencies(tokens):
+    """Calculate frequencies for tokens."""
+    return Counter(tokens)
+
+
+def corpus_frequencies(corpus):
+    """Aggregate all frequencies in a corpus."""
+    counts = Counter()
+    for tweet in corpus:
+        counts.update(tweet.text.elements())
+    return counts
 
 
 #  def make_token_dictionary(corpus):
@@ -149,13 +163,18 @@ def main():
         tweet.over_text(tokenize)
         tweet.map_tokens(normalize)
         tweet.over_text(lambda text: filter_tokens(text, stopwords))
+        tweet.over_text(lambda text: ngrams(text, 2))
+        tweet.over_text(frequencies)
     print(corpus[0].text)
+    corpus_count = corpus_frequencies(corpus)
 
     token_count = 0
     for tweet in corpus:
         token_count += len(tweet.text)
     print('{} tokens in {} tweets'.format(token_count, len(corpus)))
     print('{} tokens/tweet'.format(token_count / len(corpus)))
+    for word, freq in corpus_count.most_common(15):
+        print('%15s %d' % (word, freq))
 
 
 if __name__ == '__main__':
