@@ -139,6 +139,7 @@ def corpus_frequencies(corpus):
 
 #  def cosine_distance(vec_a, vec_b):
     #  """Return the cosine similarity between two vectors."""
+    #  # https://en.wikipedia.org/wiki/Cosine_similarity
 
 
 #  def kmeans(corpus, k):
@@ -147,6 +148,7 @@ def corpus_frequencies(corpus):
 
 #  def graph_clusters(clusters, filename):
     #  """Generate a graph of clusters."""
+    #  # http://matplotlib.org/examples/lines_bars_and_markers/scatter_with_legend.html
 
 
 def main():
