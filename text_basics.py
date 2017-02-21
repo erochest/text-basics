@@ -7,10 +7,10 @@
 from datetime import datetime
 import json
 import os
-# import re
+import re
 
 # import numpy as np
-# from nltk.tokenize.casual import TweetTokenizer
+from nltk.tokenize.casual import TweetTokenizer
 # from matplotlib.mlab import PCA
 # import matplotlib.pyplot as plt
 
@@ -60,13 +60,15 @@ def read_corpus(input_dir):
         with open(full_filename) as file_in:
             for line in file_in:
                 if line.startswith('{'):
-                    corpus.append(json.loads(line))
+                    corpus.append(Tweet.from_tweet(json.loads(line)))
 
     return corpus
 
 
-#  def tokenize(text):
-    #  """Break a text into tokens."""
+tokenizer = TweetTokenizer(reduce_len=True)
+def tokenize(text):
+    """Break a text into tokens."""
+    return tokenizer.tokenize(text)
 
 
 #  def normalize(token):
@@ -122,7 +124,17 @@ def read_corpus(input_dir):
 def main():
     """The main function. It all starts here."""
     corpus = read_corpus(INPUT_DIR)
-    print(len(corpus), 'tweets read')
+
+    print(corpus[0].text)
+    for tweet in corpus:
+        tweet.over_text(tokenize)
+    print(corpus[0].text)
+
+    token_count = 0
+    for tweet in corpus:
+        token_count += len(tweet.text)
+    print('{} tokens in {} tweets'.format(token_count, len(corpus)))
+    print('{} tokens/tweet'.format(token_count / len(corpus)))
 
 
 if __name__ == '__main__':
