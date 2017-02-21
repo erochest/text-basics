@@ -15,7 +15,7 @@ from nltk.tokenize.casual import TweetTokenizer
 # import matplotlib.pyplot as plt
 
 INPUT_DIR = 'twitter/'
-# STOP_FILE = 'english.stopwords'
+STOP_FILE = 'english.stopwords'
 
 
 class Tweet(object):
@@ -81,14 +81,22 @@ def normalize(token):
     return token
 
 
-#  def filter_tokens(tokens, stop_file):
-    #  """
-    #  Filter out tokens.
+def filter_tokens(tokens, stopwords):
+    """
+    Filter out tokens.
 
-    #  * stopwords
-    #  * word length
-    #  * -frequency-
-    #  """
+    * stopwords
+    * word length
+    * -frequency-
+    """
+
+    filtered = []
+
+    for token in tokens:
+        if token not in stopwords and len(token) > 1:
+            filtered.append(token)
+
+    return filtered
 
 
 #  def ngrams(tokens, n):
@@ -130,11 +138,17 @@ def normalize(token):
 def main():
     """The main function. It all starts here."""
     corpus = read_corpus(INPUT_DIR)
+    with open(STOP_FILE) as file_in:
+        stopwords = set(
+            normalize(token)
+            for token in tokenize(file_in.read())
+            )
 
     print(corpus[0].text)
     for tweet in corpus:
         tweet.over_text(tokenize)
         tweet.map_tokens(normalize)
+        tweet.over_text(lambda text: filter_tokens(text, stopwords))
     print(corpus[0].text)
 
     token_count = 0
