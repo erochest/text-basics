@@ -162,7 +162,7 @@ def main():
     for tweet in corpus:
         tweet.over_text(tokenize)
         tweet.map_tokens(normalize)
-        tweet.over_text(lambda text: filter_tokens(text, stopwords))
+        # tweet.over_text(lambda text: filter_tokens(text, stopwords))
         tweet.over_text(lambda text: ngrams(text, 2))
         tweet.over_text(frequencies)
     print(corpus[0].text)
@@ -175,6 +175,10 @@ def main():
     print('{} tokens/tweet'.format(token_count / len(corpus)))
     for word, freq in corpus_count.most_common(15):
         print('%15s %d' % (word, freq))
+
+    type_count = len(corpus_count)
+    token_count = sum(corpus_count.values())
+    print('{} token/type ratio.'.format(token_count / type_count))
 
 
 if __name__ == '__main__':
