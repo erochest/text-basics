@@ -71,8 +71,14 @@ def tokenize(text):
     return tokenizer.tokenize(text)
 
 
-#  def normalize(token):
-    #  """Normalize a token."""
+def normalize(token):
+    """Normalize a token."""
+    token = token.lower()
+    if '/' in token:
+        token = '#URL#'
+    elif token.isdigit():
+        token = '#NUM#'
+    return token
 
 
 #  def filter_tokens(tokens, stop_file):
@@ -128,6 +134,7 @@ def main():
     print(corpus[0].text)
     for tweet in corpus:
         tweet.over_text(tokenize)
+        tweet.map_tokens(normalize)
     print(corpus[0].text)
 
     token_count = 0
