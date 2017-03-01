@@ -9,6 +9,7 @@ from datetime import datetime
 import json
 import math
 import os
+import random
 import re
 
 import numpy as np
@@ -23,7 +24,8 @@ STOP_FILE = 'english.stopwords'
 class Tweet(object):
     """A container for the data and actions we want with tweets."""
 
-    def __init__(self, author, date, text):
+    def __init__(self, id, author, date, text):
+        self.id = id
         self.author = author
         self.date = date
         self.orig_text = text
@@ -32,10 +34,11 @@ class Tweet(object):
     @staticmethod
     def from_tweet(tweet):
         """Create a Tweet from a JSON object."""
+        id = tweet['tweet_id']
         author = tweet['user_name']
         date = datetime.fromtimestamp(tweet['created_at'] / 1000)
         text = tweet['text']
-        return Tweet(author, date, text)
+        return Tweet(id, author, date, text)
 
     def over_text(self, func):
         """Replace self.text with the results of passing text to func."""
@@ -51,6 +54,12 @@ class Tweet(object):
             text.append(func(token))
         self.text = text
         return text
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __ne__(self, other):
+        return self.id != other.id
 
     def __str__(self):
         return self.orig_text
@@ -146,6 +155,22 @@ def build_inverse_index(corpus):
     return index
 
 
+def get_singleton_set(counts):
+    """From the frequencies, return all tokens that only occur once."""
+    singletons = set()
+    for item, freq in counts.items():
+        if freq == 1:
+            singletons.add(item)
+    return singletons
+
+
+def remove_set(rm_set, freqs):
+    """Remove frequencies for anything in rm_set."""
+    for item in rm_set:
+        freqs.pop(item, None)
+    return freqs
+
+
 def make_token_dictionary(corpus):
     """Create a dictionary of tokens to vector positions."""
     token_dict = {}
@@ -172,10 +197,12 @@ def vector_distance(vec_a, vec_b):
     return math.sqrt(np.sum((vec_a - vec_b) ** 2))
 
 
-
-#  def cosine_similarity(vec_a, vec_b):
-    #  """Return the cosine similarity between two vectors."""
-    #  # https://en.wikipedia.org/wiki/Cosine_similarity
+def cosine_similarity(vec_a, vec_b):
+    """Return the cosine similarity between two vectors."""
+    # https://en.wikipedia.org/wiki/Cosine_similarity
+    return (np.sum(vec_a * vec_b) /
+            (math.sqrt(np.sum([value ** 2 for value in vec_a]))
+                * math.sqrt(np.sum([value ** 2 for value in vec_b]))))
 
 
 #  def kmeans(corpus, k):
@@ -205,6 +232,7 @@ def main():
         tweet.over_text(frequencies)
     print(corpus[0].text)
     corpus_count = corpus_frequencies(corpus)
+    singletons = get_singleton_set(corpus_count)
 
     token_count = 0
     for tweet in corpus:
@@ -218,13 +246,36 @@ def main():
     token_count = sum(corpus_count.values())
     print('{} token/type ratio.'.format(token_count / type_count))
 
-    #  index = build_inverse_index(corpus)
+    index = build_inverse_index(corpus)
     #  for tweet in index.get('kim', []):
         #  print(str(tweet))
 
+    # Remove any tokens that occur only once in the whole corpus.
+    print('removing {} singletons and re-calculating'.format(len(singletons)))
+    for single in singletons:
+        for doc in index[single]:
+            doc.text.pop(single, None)
+    corpus_count = corpus_frequencies(corpus)
+    type_count = len(corpus_count)
+    token_count = sum(corpus_count.values())
+    print('{} token/type ratio.'.format(token_count / type_count))
+
     token_dict = make_token_dictionary(corpus)
-    matrix = [vectorize(token_dict, tweet.text) for tweet in corpus]
-    print(matrix[0])
+    for tweet in corpus:
+        tweet.vector = vectorize(token_dict, tweet.text)
+
+    base_tweet = random.choice(corpus)
+    similars = [
+        (cosine_similarity(base_tweet.vector, other.vector), other)
+        for other in corpus
+        if other != base_tweet
+        ]
+    similars.sort(key=lambda p: p[0], reverse=True)
+    print('base tweet: %s' % (base_tweet,))
+    print('most similar:')
+    for other in similars[:10]:
+        print('\t%f.4 %s' % other)
+
 
 
 if __name__ == '__main__':
