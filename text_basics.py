@@ -25,6 +25,7 @@ class Tweet(object):
     def __init__(self, author, date, text):
         self.author = author
         self.date = date
+        self.orig_text = text
         self.text = text
 
     @staticmethod
@@ -49,6 +50,12 @@ class Tweet(object):
             text.append(func(token))
         self.text = text
         return text
+
+    def __str__(self):
+        return self.orig_text
+
+    def __iter__(self):
+        return iter(self.text)
 
 
 def read_corpus(input_dir):
@@ -125,6 +132,19 @@ def corpus_frequencies(corpus):
     return counts
 
 
+def build_inverse_index(corpus):
+    """This builds an inverse index based on the tokens in each item."""
+    index = {}
+
+    for doc in corpus:
+        for token in doc:
+            if token not in index:
+                index[token] = []
+            index[token].append(doc)
+
+    return index
+
+
 #  def make_token_dictionary(corpus):
     #  """Create a dictionary of tokens to vector positions."""
 
@@ -137,7 +157,7 @@ def corpus_frequencies(corpus):
     #  """Return the Euclidean distance between two vectors."""
 
 
-#  def cosine_distance(vec_a, vec_b):
+#  def cosine_similarity(vec_a, vec_b):
     #  """Return the cosine similarity between two vectors."""
     #  # https://en.wikipedia.org/wiki/Cosine_similarity
 
@@ -164,8 +184,8 @@ def main():
     for tweet in corpus:
         tweet.over_text(tokenize)
         tweet.map_tokens(normalize)
-        # tweet.over_text(lambda text: filter_tokens(text, stopwords))
-        tweet.over_text(lambda text: ngrams(text, 2))
+        tweet.over_text(lambda text: filter_tokens(text, stopwords))
+        # tweet.over_text(lambda text: ngrams(text, 2))
         tweet.over_text(frequencies)
     print(corpus[0].text)
     corpus_count = corpus_frequencies(corpus)
@@ -181,6 +201,10 @@ def main():
     type_count = len(corpus_count)
     token_count = sum(corpus_count.values())
     print('{} token/type ratio.'.format(token_count / type_count))
+
+    index = build_inverse_index(corpus)
+    for tweet in index.get('kim', []):
+        print(str(tweet))
 
 
 if __name__ == '__main__':
