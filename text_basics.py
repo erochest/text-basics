@@ -7,6 +7,7 @@
 from collections import Counter
 from datetime import datetime
 import json
+import math
 import os
 import re
 
@@ -166,8 +167,10 @@ def vectorize(index, freqs):
     return np.array(vector)
 
 
-#  def vector_distance(vec_a, vec_b):
-    #  """Return the Euclidean distance between two vectors."""
+def vector_distance(vec_a, vec_b):
+    """Return the Euclidean distance between two vectors."""
+    return math.sqrt(np.sum((vec_a - vec_b) ** 2))
+
 
 
 #  def cosine_similarity(vec_a, vec_b):
@@ -221,6 +224,7 @@ def main():
 
     token_dict = make_token_dictionary(corpus)
     matrix = [vectorize(token_dict, tweet.text) for tweet in corpus]
+    print(matrix[0])
 
 
 if __name__ == '__main__':
