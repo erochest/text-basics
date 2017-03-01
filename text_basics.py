@@ -10,7 +10,7 @@ import json
 import os
 import re
 
-# import numpy as np
+import numpy as np
 from nltk.tokenize.casual import TweetTokenizer
 # from matplotlib.mlab import PCA
 # import matplotlib.pyplot as plt
@@ -145,12 +145,25 @@ def build_inverse_index(corpus):
     return index
 
 
-#  def make_token_dictionary(corpus):
-    #  """Create a dictionary of tokens to vector positions."""
+def make_token_dictionary(corpus):
+    """Create a dictionary of tokens to vector positions."""
+    token_dict = {}
+
+    for doc in corpus:
+        for token in doc:
+            if token not in token_dict:
+                token_dict[token] = len(token_dict)
+
+    return token_dict
 
 
-#  def vectorize(index, freqs):
-    #  """Create a document vector from frequencies."""
+def vectorize(index, freqs):
+    """Create a document vector from frequencies."""
+    vector = [0.0] * len(index)
+    for token, freq in freqs.items():
+        i = index[token]
+        vector[i] = freq
+    return np.array(vector)
 
 
 #  def vector_distance(vec_a, vec_b):
@@ -202,9 +215,12 @@ def main():
     token_count = sum(corpus_count.values())
     print('{} token/type ratio.'.format(token_count / type_count))
 
-    index = build_inverse_index(corpus)
-    for tweet in index.get('kim', []):
-        print(str(tweet))
+    #  index = build_inverse_index(corpus)
+    #  for tweet in index.get('kim', []):
+        #  print(str(tweet))
+
+    token_dict = make_token_dictionary(corpus)
+    matrix = [vectorize(token_dict, tweet.text) for tweet in corpus]
 
 
 if __name__ == '__main__':
