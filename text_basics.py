@@ -205,8 +205,14 @@ def cosine_similarity(vec_a, vec_b):
                 * math.sqrt(np.sum([value ** 2 for value in vec_b]))))
 
 
-#  def kmeans(corpus, k):
-    #  """Cluster the texts in a corpus."""
+def kmeans(corpus, k):
+    """Cluster the texts in a corpus."""
+    # First get the ranges for each feature my taking each's max and min
+    # Second randomly create k points
+    # Third assign each item in the corpus to a cluster
+
+    # Fourth now move each cluster's center to a new place and refigure its
+    # membership
 
 
 #  def graph_clusters(clusters, filename):
